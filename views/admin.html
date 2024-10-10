@@ -1,1 +1,58 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Panel de Administración - Innovafp Canarias</title>
+    <link rel="stylesheet" href="/public/output.css">
+    <link rel="icon" href="/uploads/favicon.ico">
+</head>
+<body class="bg-gray-50 text-gray-900 font-sans">
+    <main class="container mx-auto p-6">
+        <!-- Gestión de Cursos -->
+        <div id="course-management" class="p-6 bg-white shadow-md rounded-lg mt-6">
+            <h2 class="text-2xl font-bold mb-4">Gestión de Cursos</h2>
+            <form id="create-course-form">
+                <label for="course-name" class="block text-gray-700 font-bold mb-2">Nombre del Curso:</label>
+                <input type="text" id="course-name" name="course-name" class="block mb-4">
+                <label for="start-date" class="block text-gray-700 font-bold mb-2">Fecha de Apertura:</label>
+                <input type="date" id="start-date" name="start-date" class="block mb-4">
+                <label for="import-course" class="block text-gray-700 font-bold mb-2">Importar datos de un curso anterior:</label>
+                <select id="import-course" name="import-course" class="block mb-4">
+                    <option value="">No importar</option>
+                    <!-- Cursos anteriores se llenarán aquí -->
+                </select>
+                <button type="button" onclick="createCourse()" class="bg-blue-600 text-white p-2 rounded">Crear y Abrir Curso</button>
+            </form>
+        </div>
+        
+        <!-- Plantillas de Informes -->
+        <div id="report-template-management" class="p-6 bg-white shadow-md rounded-lg mt-6">
+            <h2 class="text-2xl font-bold mb-4">Gestión de Plantillas de Informes</h2>
+            <form id="create-template-form">
+                <label for="template-name" class="block text-gray-700 font-bold mb-2">Nombre de la Plantilla:</label>
+                <input type="text" id="template-name" name="template-name" class="block mb-4">
+                <label for="template-html" class="block text-gray-700 font-bold mb-2">HTML de la Plantilla:</label>
+                <textarea id="template-html" name="template-html" class="block mb-4" rows="10"></textarea>
+                <button type="button" onclick="createReportTemplate()" class="bg-blue-600 text-white p-2 rounded">Crear Plantilla</button>
+            </form>
+        </div>
+
+        <!-- Generación de Informes en PDF -->
+        <div id="generate-report-pdf" class="p-6 bg-white shadow-md rounded-lg mt-6">
+            <h2 class="text-2xl font-bold mb-4">Generar Informe en PDF</h2>
+            <label for="report-id" class="block text-gray-700 font-bold mb-2">Seleccione el Informe:</label>
+            <select id="report-id" class="block mb-4">
+                <!-- Aquí se llenarán los informes -->
+            </select>
+            <label for="template-id" class="block text-gray-700 font-bold mb-2">Seleccione la Plantilla:</label>
+            <select id="template-id" class="block mb-4">
+                <!-- Aquí se llenarán las plantillas -->
+            </select>
+            <button type="button" onclick="generateReportPdf()" class="bg-green-600 text-white p-2 rounded">Generar PDF</button>
+        </div>
+    </main>
+    <script src="/public/app.js"></script>
+</body>
+</html>
 
