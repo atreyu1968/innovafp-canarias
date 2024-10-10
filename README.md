@@ -7,6 +7,124 @@ Esta guía explica cómo instalar y configurar la aplicación **Innovafp Canaria
 - **Servidor con Ubuntu (versión limpia)**: Asegúrate de tener un servidor Ubuntu en estado "limpio" para la instalación.
 - **Acceso a Git**: El repositorio de la aplicación se encuentra en GitHub en la siguiente URL: [https://github.com/atreyu1968/innovafp-canarias](https://github.com/atreyu1968/innovafp-canarias).
 
+### Instalación Desatendida
+
+A continuación se presenta un script que permite realizar la instalación de forma desatendida en un servidor Ubuntu completamente limpio. Copia el siguiente contenido en un archivo llamado `install_innovafp.sh` y ejecútelo como usuario root o con permisos de sudo:
+
+```bash
+#!/bin/bash
+
+# Actualizar el sistema
+echo "Actualizando paquetes del sistema..."
+sudo apt update && sudo apt upgrade -y
+
+# Instalar Git
+echo "Instalando Git..."
+sudo apt install git -y
+
+# Clonar el repositorio
+echo "Clonando el repositorio Innovafp Canarias..."
+git clone https://github.com/atreyu1968/innovafp-canarias.git
+cd innovafp-canarias
+
+# Instalar Node.js y npm
+echo "Instalando Node.js y npm..."
+curl -fsSL https://deb.nodesource.com/setup_18.x | sudo -E bash -
+sudo apt install -y nodejs
+
+# Verificar la instalación de Node.js y npm
+node -v
+npm -v
+
+# Instalar PM2
+echo "Instalando PM2..."
+sudo npm install -g pm2
+
+# Instalar MySQL
+echo "Instalando MySQL..."
+sudo apt install mysql-server -y
+
+# Configurar MySQL
+echo "Configurando MySQL..."
+# Configuración segura de MySQL (se omiten las preguntas para automatizar)
+sudo mysql -e "ALTER USER 'root'@'localhost' IDENTIFIED WITH 'mysql_native_password' BY 'securepassword'; FLUSH PRIVILEGES;"
+sudo mysql -e "UNINSTALL COMPONENT 'file://component_validate_password';"
+
+# Crear base de datos y usuario
+echo "Creando base de datos y usuario..."
+sudo mysql -u root -psecurepassword -e "CREATE DATABASE innovafp;"
+sudo mysql -u root -psecurepassword -e "CREATE USER 'innovafp_user'@'localhost' IDENTIFIED BY 'securepassword';"
+sudo mysql -u root -psecurepassword -e "GRANT ALL PRIVILEGES ON innovafp.* TO 'innovafp_user'@'localhost'; FLUSH PRIVILEGES;"
+
+# Instalar dependencias del proyecto
+echo "Instalando dependencias del proyecto..."
+npm install
+
+# Crear archivo .env
+echo "Creando archivo de configuración .env..."
+cat <<EOT >> .env
+DB_HOST=localhost
+DB_USER=innovafp_user
+DB_PASSWORD=securepassword
+DB_NAME=innovafp
+
+JWT_SECRET=your_jwt_secret_key
+PORT=3000
+EOT
+
+# Ejecutar el script SQL para crear las tablas
+echo "Ejecutando script SQL para crear las tablas..."
+sudo mysql -u innovafp_user -psecurepassword innovafp < database/schema.sql
+
+# Configurar Tailwind CSS
+echo "Configurando Tailwind CSS..."
+npx tailwindcss -i ./src/input.css -o ./public/output.css --watch &
+
+# Iniciar la aplicación con PM2
+echo "Iniciando la aplicación con PM2..."
+pm2 start index.js --name "Innovafp"
+
+# Guardar la configuración de PM2
+echo "Guardando configuración de PM2..."
+pm2 save
+pm2 startup | tail -n 1 | bash
+
+# Instalar y configurar Nginx (opcional)
+echo "Instalando y configurando Nginx..."
+sudo apt install nginx -y
+
+cat <<EOT | sudo tee /etc/nginx/sites-available/innovafp
+server {
+    listen 80;
+    server_name your_domain_or_ip;
+
+    location / {
+        proxy_pass http://localhost:3000;
+        proxy_http_version 1.1;
+        proxy_set_header Upgrade \$http_upgrade;
+        proxy_set_header Connection 'upgrade';
+        proxy_set_header Host \$host;
+        proxy_cache_bypass \$http_upgrade;
+    }
+}
+EOT
+
+# Habilitar la configuración de Nginx
+echo "Habilitando la configuración de Nginx..."
+sudo ln -s /etc/nginx/sites-available/innovafp /etc/nginx/sites-enabled/
+sudo nginx -t
+sudo systemctl restart nginx
+
+echo "Instalación completada. Puedes acceder a la aplicación en http://your_domain_or_ip"
+```
+
+Para hacer ejecutable el script y ejecutarlo:
+
+```bash
+chmod +x install_innovafp.sh
+sudo ./install_innovafp.sh
+```
+
 ### 1. Preparar el Entorno
 
 #### 1.1 Actualizar Ubuntu
